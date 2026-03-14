@@ -49,7 +49,7 @@ AppDeck is a versatile card-based workspace that lets you organize information y
 
 ## License
 
-MIT License
+Apache License 2.0
 
 ## Contributing
 
