@@ -2262,6 +2262,7 @@ function wireCard(id,e,a){
   if(a.type==='note')wireNote(id,e,a);
   if(a.type==='table')wireTableColResize(id,e);
   if(a.type==='task')wireTask(id,e,a);
+  if(a.type==='action')wireAction(id,e,a);
   if(a.type==='cal')wireCal(id,e,a);
   wireCardDropImport(id,e);
 }
@@ -2300,6 +2301,7 @@ function refreshBody(id){
   else if(a.type==='calc')wireCalc(id,e,a);
   else if(a.type==='md')wireMd(id,e,a);
   else if(a.type==='note')wireNote(id,e,a);
+  else if(a.type==='action')wireAction(id,e,a);
   else if(a.type==='library')wireLibrary(id,e,a);
   else if(a.type==='task')wireTask(id,e,a);
   else if(a.type==='cal')wireCal(id,e,a);
@@ -3073,10 +3075,11 @@ function updateTaskbar(){
 function updateTaskbarFocused(id){
   const tbFocused=document.getElementById('tb-focused');
   if(!tbFocused) return;
-  if(id===null||id===undefined){ tbFocused.textContent='—'; return; }
+  if(id===null||id===undefined){ tbFocused.textContent='—'; updateActionButtons(null); return; }
   const a=cards[id];
   if(a) tbFocused.textContent=ICONS[a.type]+' '+a.title;
   else tbFocused.textContent='—';
+  updateActionButtons(id);
 }
 function updateTaskbarFilterStatus(){
   const tbFilter=document.getElementById('tb-filter-status');
@@ -3827,6 +3830,38 @@ function wireMd(id,container){
   });
   const ta=container.querySelector('.mdeditor');
   if(ta)ta.addEventListener('input',()=>{cards[id].data.text=ta.value;markDirty(id);scheduleAutoSave();});
+}
+function actionHTML(a){
+  const d=a.data;
+  return `<div class="action-card-wrap">
+    <div class="action-meta-row">
+      <label>ID <input class="action-meta-id" value="${esc(d.meta?.id||'')}"></label>
+      <label>Name <input class="action-meta-name" value="${esc(d.meta?.name||'')}"></label>
+    </div>
+    <div class="action-meta-row">
+      <label>Version <input class="action-meta-version" value="${esc(d.meta?.version||'1.0')}"></label>
+      <label>Icon <input class="action-meta-icon" value="${esc(d.meta?.icon||'')}"></label>
+    </div>
+    <div class="action-skill-row">
+      <div class="action-skill-label">SKILL.md</div>
+      <textarea class="action-skill-text">${esc(d.skill||'')}</textarea>
+    </div>
+  </div>`;
+}
+function wireAction(id,container){
+  const a=cards[id]; if(!a) return;
+  const upd=(field,value)=>{a.data[field]=value;markDirty(id);scheduleAutoSave();};
+  const updMeta=(key,value)=>{a.data.meta[key]=value;markDirty(id);scheduleAutoSave();};
+  const idIn=container.querySelector('.action-meta-id');
+  const nameIn=container.querySelector('.action-meta-name');
+  const verIn=container.querySelector('.action-meta-version');
+  const iconIn=container.querySelector('.action-meta-icon');
+  const skillTa=container.querySelector('.action-skill-text');
+  if(idIn)idIn.addEventListener('change',e=>updMeta('id',e.target.value));
+  if(nameIn)nameIn.addEventListener('change',e=>updMeta('name',e.target.value));
+  if(verIn)verIn.addEventListener('change',e=>updMeta('version',e.target.value));
+  if(iconIn)iconIn.addEventListener('change',e=>updMeta('icon',e.target.value));
+  if(skillTa)skillTa.addEventListener('input',e=>upd('skill',e.target.value));
 }
 function parseMd(txt){
   if(!txt)return '';
@@ -5710,12 +5745,55 @@ function executeAllPending(key, count, allBtn){
   allBtn.style.display='none';
 }
 
+function updateActionButtons(id){
+  const holder=document.getElementById('tb-action-buttons'); if(!holder) return;
+  const a = id && cards[id];
+  if(!a || a.type!=='action'){ holder.innerHTML=''; return; }
+  holder.innerHTML = `
+    <button class="tbtn action-run" onclick="executeActionCard(${id})" title="Run this action"><span class="ico">▶</span> Run</button>
+    <button class="tbtn action-save" onclick="saveCardAs(${id})" title="Export action JSON"><span class="ico">⬇</span> Export</button>
+  `;
+}
+
+function executeActionCard(id){
+  const a=cards[id]; if(!a)return;
+  const name=a.data.meta?.name||a.title||'Action';
+  const out=[
+    `# Action Execution: ${name}`,
+    `ID: ${a.data.meta?.id||''}`,
+    `Version: ${a.data.meta?.version||''}`,
+    `Icon: ${a.data.meta?.icon||''}`,
+    '',
+    '## SKILL.md',
+    a.data.skill||''
+  ].join('\n\n');
+  const noteId = spawnCard('md', `Action Result: ${name}`, {text: out}, a.pid, true);
+  flash(noteId);
+  notif(`Executed action "${name}"`);
+}
+
 // ── SEND CHAT ─────────────────────────────────────────────────
 async function sendChat(id){
   const a=cards[id]; if(!a||a.data.busy)return;
   const e=document.getElementById('c'+id); if(!e)return;
   const ta=e.querySelector('.chatin');
   const txt=ta?ta.value.trim():''; if(!txt)return;
+
+  const normalized = txt.toLowerCase();
+  if(normalized.includes('write that into an action')){
+    const previousUser = a.data.msgs.filter(m=>m.r==='u'&&m.t.toLowerCase().indexOf('write that into an action')===-1).map(m=>m.t).join('\n\n');
+    const prevAi = [...a.data.msgs].reverse().find(m=>m.r==='a'&&m.t?.trim());
+    const skillText = prevAi?.t || previousUser || txt.replace(/write that into an action/gi,'').trim() || '';
+    const actionTitle = skillText.split('\n')[0].slice(0,40) || 'Action';
+    const actionId = actionTitle.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    const newData = {skill:skillText, meta:{id:actionId,name:actionTitle,version:'1.0',icon:''}};
+    const aid = spawnCard('action', `Action: ${actionTitle}`, newData, a.pid, true);
+    flash(aid);
+    notif('Created Action card from chat');
+    if(ta){ta.value='';ta.style.height='auto';}
+    return;
+  }
+
   if(ta){ta.value='';ta.style.height='auto';}
   a.data.msgs.push({r:'u',t:txt,h:esc(txt),ts:Date.now()});
   // Use a per-card flag (not AbortController/AbortSignal) so state is always
@@ -7609,6 +7687,7 @@ function sniffFileType(filename, bytes){
       const j = JSON.parse(text);
       if(j._wsCard?.type) return {type:j._wsCard.type, confidence:'high'};
       if(Array.isArray(j.messages) && j.messages[0]?.role) return {type:'chat', confidence:'high'};
+      if(j.skill && typeof j.skill==='string' && j.meta && typeof j.meta==='object') return {type:'action', confidence:'high'};
       if(Array.isArray(j.tasks)) return {type:'task', confidence:'high'};
       if(Array.isArray(j.items) && j.items[0]?.t !== undefined) return {type:'list', confidence:'high'};
       if(Array.isArray(j.properties)||Array.isArray(j.rows)) return {type:'kv', confidence:'high'};
@@ -7663,6 +7742,13 @@ function fileToCardData(type, ext, bytes, filename){
     }
   }
 
+  if(type==='action'){
+    try{
+      const text = new TextDecoder('utf-8',{fatal:false}).decode(bytes);
+      const j = JSON.parse(text);
+      return {skill:j.skill||'', meta:Object.assign({id:'',name:'',version:'1.0',icon:''}, j.meta||{})};
+    }catch(err){ return defData(type); }
+  }
   // Image: convert to data URL
   if(type==='img'){
     const dec = new TextDecoder('utf-8',{fatal:false});
@@ -7988,6 +8074,7 @@ const CARD_SAVE_FORMATS = {
             {ext:'.txt',  mime:'text/plain',           label:'Plain text (.txt)'}],
   task:    [{ext:'.csv',  mime:'text/csv',             label:'CSV'},
             {ext:'.json', mime:'application/json',     label:'JSON'}],
+  action:  [{ext:'.json', mime:'application/json',     label:'Action JSON'}],
 };
 
 function cardToFileContent(a, ext){
@@ -8047,6 +8134,9 @@ function cardToFileContent(a, ext){
     if(ext==='.json') return JSON.stringify({title:a.title,tasks:a.data.tasks||[]},null,2);
     const q=v=>{const s=String(v||'');return s.includes(',')?' '+s:s;};
     return [cols.join(','),...(a.data.tasks||[]).map(t=>cols.map(k=>q(t[k])).join(','))].join(NL);
+  }
+  if(a.type==='action'){
+    return JSON.stringify({title:a.title,type:'action',skill:a.data.skill||'',meta:a.data.meta||{}},null,2);
   }
   return JSON.stringify(a.data,null,2);
 }
