@@ -75,7 +75,3 @@ AppDeck is a card-based workspace in a single HTML file. Core promise: a small s
 - **Silent storage failure.** Quota errors were swallowed. Surface them.
 - **Fragility.** Merge zones, span picker and per-card geometry were the most bug-prone code. The split tree replaces them.
 - **Version drift.** One version constant, semver.
-
-## Suggested project instructions (paste into the new project)
->
-> You are building AppDeck 1.0 using APPDECK-1.0-PROJECT-BRIEF.md as the source of truth. Work one milestone at a time, deliver a single version-tagged HTML file per checkpoint, keep modules separate, and update the milestone table after each one. Ask before changing a locked decision.
