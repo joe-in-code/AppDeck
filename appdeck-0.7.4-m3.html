@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AppDeck 0.7.4 · M3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f7f9;--surf:#fff;--surf2:#f1f3f6;--bd:#e3e6ec;--tx:#14171f;--dim:#6b7280;--ac:#2f6fed;--acs:rgba(47,111,237,.14);--sh:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1015;--surf:#16181f;--surf2:#1c1f27;--bd:#2a2e39;--tx:#e8eaf0;--dim:#8b93a3;--ac:#5b8def;--acs:rgba(91,141,239,.18);--sh:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1015;--surf:#16181f;--surf2:#1c1f27;--bd:#2a2e39;--tx:#e8eaf0;--dim:#8b93a3;--ac:#5b8def;--acs:rgba(91,141,239,.18);--sh:0 1px 2px rgba(0,0,0,.4);color-scheme:dark}
+html,body{height:100%}
+*{box-sizing:border-box}
+body{margin:0;display:flex;flex-direction:column;font:13px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--tx)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit}
+#top{display:flex;align-items:center;gap:6px;padding:8px 10px;flex:none;overflow-x:auto}
+.logo{display:flex;align-items:center;gap:8px;font-weight:600;margin-right:8px;white-space:nowrap}
+.logo i{width:18px;height:18px;border-radius:5px;background:var(--ac);display:block}
+.logo small{font-weight:400;color:var(--dim);font-size:11px}
+.wt{padding:5px 10px;border-radius:8px;color:var(--dim);white-space:nowrap}
+.wt:hover{background:var(--surf2)}.wt.on{background:var(--surf);color:var(--tx);box-shadow:var(--sh)}
+.ib{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;min-width:28px;padding:0 8px;border-radius:8px;color:var(--dim)}
+.ib:hover:not(:disabled){background:var(--surf2);color:var(--tx)}.ib:disabled{opacity:.35;cursor:default}
+.cmdk{border:1px solid var(--bd);background:var(--surf);box-shadow:var(--sh);min-width:200px;justify-content:flex-start}
+.cmdk kbd{margin-left:auto;font:11px Inter,sans-serif;color:var(--dim)}
+.sp{flex:1}
+#ws{flex:1;min-height:0;padding:0 8px 8px;display:flex}
+#root{flex:1;min-width:0;display:flex}
+.split{flex:1;display:flex;min-width:0;min-height:0}
+.split.row{flex-direction:row}.split.col{flex-direction:column}
+.cell{display:flex;min-width:0;min-height:0}
+.div{flex:none;position:relative}
+.div.row{width:8px;cursor:col-resize}.div.col{height:8px;cursor:row-resize}
+.div::after{content:"";position:absolute;border-radius:2px;background:var(--ac);opacity:0;transition:opacity .12s}
+.div.row::after{left:3px;right:3px;top:20%;bottom:20%}.div.col::after{top:3px;bottom:3px;left:20%;right:20%}
+.div:hover::after{opacity:.6}
+.pane{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--surf);border:1px solid var(--bd);border-radius:10px;box-shadow:var(--sh);overflow:hidden}
+.pane.focus{border-color:color-mix(in srgb,var(--ac) 50%,var(--bd))}
+.tabs{display:flex;align-items:center;gap:2px;padding:4px;background:var(--surf2);border-bottom:1px solid var(--bd);overflow-x:auto;flex:none}
+.tab{display:flex;align-items:center;gap:6px;padding:4px 6px 4px 9px;border-radius:7px;color:var(--dim);cursor:grab;white-space:nowrap;touch-action:none}
+.tab:hover{color:var(--tx)}.tab.on{background:var(--surf);color:var(--tx);box-shadow:var(--sh)}
+.tab .x{display:inline-flex;padding:2px;border-radius:5px;opacity:0;color:var(--dim)}
+.tab:hover .x,.tab.on .x{opacity:1}.tab .x:hover{background:var(--surf2);color:var(--tx)}
+.body{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
+.empty{margin:auto;color:var(--dim);text-align:center;padding:20px}
+.body textarea{flex:1;border:0;outline:0;resize:none;padding:14px 16px;background:transparent;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);margin:12px;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.grid input{border:0;border-right:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:7px 9px;background:transparent;min-width:0;outline:0}
+.grid input:focus{background:var(--acs)}.grid input.h{font-weight:600;background:var(--surf2)}
+.tl{padding:8px 10px}
+.tr{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:7px}.tr:hover{background:var(--surf2)}
+.tr input[type=text]{flex:1;border:0;background:transparent;outline:0}.tr input.d{text-decoration:line-through;color:var(--dim)}
+.tr input[type=checkbox]{accent-color:var(--ac)}
+.as{display:flex;flex-direction:column;flex:1;min-height:0}
+.seg{display:flex;gap:2px;padding:2px;margin:10px 12px 4px;background:var(--surf2);border-radius:9px;align-self:flex-start}
+.seg button{padding:4px 12px;border-radius:7px;color:var(--dim)}.seg button.on{background:var(--surf);color:var(--tx);box-shadow:var(--sh)}
+.badge{margin:0 12px;color:var(--dim);font-size:11px}
+.msgs{flex:1;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.m{max-width:85%;padding:7px 10px;border-radius:10px;background:var(--surf2)}.m.u{align-self:flex-end;background:var(--acs)}
+.inp{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--bd)}
+.inp input{flex:1;border:1px solid var(--bd);border-radius:9px;padding:7px 10px;background:var(--surf);outline:0}
+.inp input:focus{border-color:var(--ac)}
+.st{font-size:11px;color:var(--dim);padding:0 6px;white-space:nowrap}.st.err{color:#d92d20;font-weight:500}
+@keyframes aip{0%{box-shadow:0 0 0 0 var(--ac)}100%{box-shadow:0 0 0 8px transparent}}@keyframes aif{0%,35%{background:var(--acs)}100%{background:transparent}}
+.tab.ai{animation:aip 1.1s 2}.tab.ai::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ac);flex:none}
+.body .chg{animation:aif 5s ease-out;box-shadow:inset 3px 0 0 var(--ac)}
+.aibar{flex:none;display:flex;align-items:center;gap:8px;padding:5px 12px;font-size:11px;color:var(--ac);background:var(--acs);border-bottom:1px solid var(--bd)}.aibar button{margin-left:auto;color:var(--dim);padding:0 4px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:7px 14px;border-radius:9px;font-size:12px;z-index:70;transition:opacity .3s;opacity:0;pointer-events:none}
+.inp{position:relative}.mn{position:absolute;left:10px;bottom:100%;display:none;background:var(--surf);border:1px solid var(--bd);border-radius:9px;box-shadow:var(--sh);padding:3px}.mn button{display:block;width:100%;text-align:left;padding:4px 10px;border-radius:6px}.mn button:hover{background:var(--acs)}
+.m{white-space:pre-wrap}.m.err{color:#d92d20}.act{margin-top:6px;border:1px solid var(--bd);border-radius:8px;padding:6px 8px;background:var(--surf);white-space:normal}.act pre{margin:4px 0 0;font:11px/1.4 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;max-height:160px;overflow:auto}.df-a{color:#16a34a}.df-r{color:#d92d20}
+.cfg{display:flex;flex-direction:column;gap:6px;padding:12px}.cfg label{font-size:11px;color:var(--dim)}.cfg input,.cfg select{border:1px solid var(--bd);border-radius:8px;padding:6px 9px;background:var(--surf);outline:0}
+.btn{padding:5px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--surf)}.btn.p{background:var(--ac);border-color:var(--ac);color:#fff}
+#drop{position:fixed;display:none;z-index:40;pointer-events:none;background:var(--acs);border:2px solid var(--ac);border-radius:10px;transition:all .08s}
+.ghost{position:fixed;left:0;top:0;z-index:50;pointer-events:none;padding:4px 10px;background:var(--surf);border:1px solid var(--ac);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.2);font-size:12px}
+body.dragging{user-select:none;cursor:grabbing}
+#pal{position:fixed;inset:0;z-index:60;display:none;align-items:flex-start;justify-content:center;padding-top:14vh;background:rgba(0,0,0,.35)}
+#pal .box{width:min(520px,92vw);background:var(--surf);border:1px solid var(--bd);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.3);overflow:hidden}
+#pal input{width:100%;border:0;border-bottom:1px solid var(--bd);padding:13px 15px;background:transparent;outline:0;font-size:14px}
+#pal .l{max-height:320px;overflow:auto;padding:5px}
+#pal .it{padding:8px 10px;border-radius:7px;cursor:pointer}#pal .it.on{background:var(--acs)}
+</style>
+</head>
+<body>
+<div id="top"></div>
+<div id="ws"><div id="root"></div></div>
+<div id="drop"></div>
+<div id="pal"><div class="box"><input placeholder="Type a command or card name…" aria-label="Command palette"><div class="l"></div></div></div>
+<script>
+const VER='0.7.4-m3';
+const $=s=>document.querySelector(s);
+const P={note:'M6 3h9l4 4v14H6zM9 12h7M9 16h5',table:'M3 5h18v14H3zM3 10h18M9 5v14M15 5v14',tasks:'M5 7l2 2 3-3M5 15l2 2 3-3M13 8h7M13 16h7',assistant:'M4 5h16v11H9l-5 4z',x:'M6 6l12 12M18 6L6 18',max:'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5',undo:'M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3',redo:'M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3',sun:'M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4M12 8a4 4 0 100 8 4 4 0 000-8z',plus:'M12 5v14M5 12h14',search:'M11 4a7 7 0 100 14 7 7 0 000-14zM21 21l-5-5'};
+const ic=k=>`<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${P[k]}"/></svg>`;
+/* ---------- cards/registry: a schema per type coerces loaded or AI-supplied data ---------- */
+const str=v=>typeof v==='string'?v:'',arr=v=>Array.isArray(v)?v:[],cell=v=>v==null?'':String(v);
+const REG={
+ note:{title:'Note',def:()=>({text:''}),fix:d=>({text:str(d.text)})},
+ tasks:{title:'Tasks',def:()=>({l:[{t:'Drag this tab to a pane edge',d:0},{t:'Press Ctrl/Cmd+K',d:0}]}),fix:d=>({l:Array.isArray(d.l)?d.l.map(x=>({t:str(x&&x.t),d:x&&x.d?1:0})):REG.tasks.def().l})},
+ table:{title:'Table',def:()=>({g:[['Item','Qty','Price','Total'],['','','',''],['','','',''],['','','','']]}),fix:d=>{let g=arr(d.g).map(r=>arr(r).map(cell));const n=Math.max(1,...g.map(r=>r.length));g=g.map(r=>r.concat(Array(n-r.length).fill('')));return{g:g.length?g:REG.table.def().g}}},
+ assistant:{title:'Assistant',def:()=>({mode:'ask',m:[]}),fix:d=>({mode:['ask','plan','create'].includes(d.mode)?d.mode:'ask',m:arr(d.m).map(x=>({u:x&&x.u?1:0,t:str(x&&x.t)}))})}};
+const TYPES=Object.fromEntries(Object.entries(REG).map(([k,v])=>[k,v.title]));
+let _n=0;const id=()=>'i'+Date.now().toString(36)+(_n++);
+const pane=(cs=[])=>({t:'pane',id:id(),cs,a:cs[0]||null});
+const sp=(dir,ch,sz)=>({t:'split',id:id(),dir,ch,sz:sz||ch.map(()=>1/ch.length)});
+const newWs=name=>{const p=pane();return{name,root:p,cards:{},data:{},focus:p.id,max:null}};
+let S,H=[],F=[];
+
+/* ---------- persistence ---------- */
+/* .appdeck format v1: canonical JSON per card; keys are scrubbed on write and on read */
+const BAD=/key|token|secret|password/i;
+const scrub=v=>Array.isArray(v)?v.map(scrub):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>!BAD.test(k)).map(([k,x])=>[k,scrub(x)])):v;
+const clone=v=>JSON.parse(JSON.stringify(v));
+function pack(s){return{format:'appdeck',v:1,app:VER,theme:s.theme||null,cur:s.cur,workspaces:s.tabs.map(w=>({name:w.name,focus:w.focus,layout:clone(w.root),cards:Object.values(w.cards).map(c=>({id:c.id,type:c.type,title:c.title,data:scrub(clone(w.data[c.id]||{}))}))}))}}
+function unpack(o){
+  if(!o||o.format!=='appdeck'||o.v!==1||!arr(o.workspaces).length)throw new Error('Not a valid .appdeck file');
+  const tabs=o.workspaces.map((x,k)=>{x=x||{};const w={name:str(x.name)||'Workspace '+(k+1),cards:{},data:{},max:null},seen=new Set(),ids=new Set();
+    const uq=v=>{v=str(v);if(!v||ids.has(v))v=id();ids.add(v);return v};
+    arr(x.cards).forEach(c=>{if(!c||!REG[c.type]||typeof c.id!=='string'||!c.id||c.id==='__proto__'||w.cards[c.id])return;w.cards[c.id]={id:c.id,type:c.type,title:str(c.title)||REG[c.type].title};w.data[c.id]=REG[c.type].fix(scrub(c.data||{}))});
+    const fx=n=>{if(!n||typeof n!=='object')return null;
+      if(n.t==='pane'){const cs=arr(n.cs).filter(c=>w.cards[c]&&!seen.has(c));cs.forEach(c=>seen.add(c));return{t:'pane',id:uq(n.id),cs,a:cs.includes(n.a)?n.a:cs[0]||null}}
+      if(n.t==='split'&&(n.dir==='row'||n.dir==='col')){const ch=[],sz=[];arr(n.ch).forEach((c,i)=>{const f=fx(c);if(f){ch.push(f);sz.push(+n.sz[i]>0?+n.sz[i]:1)}});if(!ch.length)return null;if(ch.length===1)return ch[0];const t=sz.reduce((a,b)=>a+b,0);return{t:'split',id:uq(n.id),dir:n.dir,ch,sz:sz.map(v=>Math.abs(t-1)<1e-9?v:v/t)}}
+      return null};
+    w.root=fx(x.layout)||pane();const fp=firstPane(w);
+    Object.keys(w.cards).filter(c=>!seen.has(c)).forEach(c=>{fp.cs.push(c);fp.a=fp.a||c});
+    w.focus=find(w,x.focus)?x.focus:fp.id;return w});
+  return{tabs,cur:Math.min(Math.max(0,o.cur|0),tabs.length-1),n:tabs.length,theme:o.theme==='dark'||o.theme==='light'?o.theme:undefined}}
+function exportFile(){const b=new Blob([JSON.stringify(pack(S),null,1)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='workspace.appdeck';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function importFile(){const i=document.createElement('input');i.type='file';i.accept='.appdeck,.json,application/json';
+  i.onchange=async()=>{const f=i.files[0];if(!f)return;try{const n=unpack(JSON.parse(await f.text()));if(!confirm('Replace all current workspaces with "'+f.name+'"?'))return;S=n;H=[];F=[];applyTheme();commit(null)}catch(e){setSt('Import failed: '+e.message,1)}};i.click()}
+
+/* ---------- persist: IndexedDB autosave, errors are shown, never swallowed ---------- */
+let _db=null,tm=null,dirty=false,ST={t:'',e:0};
+const idb=()=>_db||(_db=new Promise((res,rej)=>{const r=indexedDB.open('appdeck',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+const kv=(mode,f)=>idb().then(db=>new Promise((res,rej)=>{const t=db.transaction('kv',mode),q=f(t.objectStore('kv'));t.oncomplete=()=>res(q.result);t.onerror=t.onabort=()=>rej(t.error)}));
+function setSt(t,e){ST={t,e:e?1:0};paintSt()}
+function paintSt(){const e=document.getElementById('st');if(e){e.textContent=ST.t;e.className='st'+(ST.e?' err':'');e.title=ST.t}}
+async function flush(){if(!dirty)return;dirty=false;try{await kv('readwrite',s=>s.put(pack(S),'state'));if(!dirty)setSt('Saved')}catch(e){dirty=true;console.error(e);setSt(e&&e.name==='QuotaExceededError'?'Storage full: export a .appdeck file':'Save failed: '+(e&&e.message||e),1)}}
+function schedule(){dirty=true;setSt('Unsaved');clearTimeout(tm);tm=setTimeout(flush,300)}
+addEventListener('pagehide',flush);document.addEventListener('visibilitychange',()=>{if(document.hidden)flush()})
+
+/* ---------- tree helpers ---------- */
+const W=()=>S.tabs[S.cur];
+function walk(n,f,par=null,i=0){f(n,par,i);if(n.t==='split')n.ch.forEach((c,k)=>walk(c,f,n,k))}
+function find(w,nid){let r=null;walk(w.root,(n,p,i)=>{if(n.id===nid)r={n,p,i}});return r}
+function paneOf(w,cid){let r=null;walk(w.root,n=>{if(n.t==='pane'&&n.cs.includes(cid))r=n});return r}
+function firstPane(w){let r=null;walk(w.root,n=>{if(!r&&n.t==='pane')r=n});return r}
+function replace(w,old,nw){const f=find(w,old.id);if(!f.p)w.root=nw;else f.p.ch[f.i]=nw}
+function norm(s){const t=s.sz.reduce((a,b)=>a+b,0)||1;s.sz=s.sz.map(v=>v/t)}
+function prune(w,p){const f=find(w,p.id);if(!f||!f.p)return;const par=f.p;par.ch.splice(f.i,1);par.sz.splice(f.i,1);norm(par);if(par.ch.length===1)replace(w,par,par.ch[0]);if(!find(w,w.focus))w.focus=firstPane(w).id}
+function detach(w,cid){const p=paneOf(w,cid);if(!p)return;p.cs=p.cs.filter(x=>x!==cid);if(p.a===cid)p.a=p.cs[p.cs.length-1]||null;if(!p.cs.length)prune(w,p)}
+function addSplit(w,target,zone,cid){
+  const np=pane([cid]),dir=(zone==='l'||zone==='r')?'row':'col',before=zone==='l'||zone==='t',f=find(w,target.id);
+  if(f.p&&f.p.dir===dir){const par=f.p,s=par.sz[f.i]/2;par.sz[f.i]=s;const at=f.i+(before?0:1);par.ch.splice(at,0,np);par.sz.splice(at,0,s)}
+  else replace(w,target,sp(dir,before?[np,target]:[target,np],[.5,.5]));
+  w.focus=np.id}
+function applyPreset(w,name){
+  const ids=Object.keys(w.cards),n={single:1,cols:2,quad:4,main:3}[name],ps=Array.from({length:n},()=>pane());
+  ids.forEach((c,i)=>ps[i%n].cs.push(c));ps.forEach(p=>p.a=p.cs[0]||null);
+  w.root=name==='single'?ps[0]:name==='cols'?sp('row',ps):name==='quad'?sp('col',[sp('row',[ps[0],ps[1]]),sp('row',[ps[2],ps[3]])]):sp('row',[ps[0],sp('col',[ps[1],ps[2]])],[.58,.42]);
+  w.focus=ps[0].id;w.max=null}
+
+/* ---------- history (layout only; card content is kept in w.data) ---------- */
+const snap=d=>{const w=W();return JSON.stringify({root:w.root,cards:w.cards,focus:w.focus,...(d?{data:w.data}:{})})};
+/* the single mutation path: history (layout only) -> change -> dirty/autosave -> render */
+function commit(fn,o={}){if(fn){if(o.hist!==false){H.push(snap(o.data));if(H.length>80)H.shift();F=[]}fn(W())}schedule();if(o.render!==false)render()}
+const mut=fn=>commit(fn);
+function save(){commit(null,{render:false})}
+function restore(s){for(const k in AIMARK)delete AIMARK[k];Object.assign(W(),JSON.parse(s));W().max=null;save();render()}
+function undo(){if(!H.length)return;const s=H.pop();F.push(snap(!!JSON.parse(s).data));restore(s)}
+function redo(){if(!F.length)return;const s=F.pop();H.push(snap(!!JSON.parse(s).data));restore(s)}
+
+/* ---------- actions ---------- */
+function addCard(type){mut(w=>{const p=(find(w,w.focus)||{}).n||firstPane(w),c=id();w.cards[c]={id:c,type,title:TYPES[type]};w.data[c]=REG[type].def();if(type==='assistant'){p.cs.push(c);p.a=c;w.focus=p.id}else place(w,c,true)})}
+function closeCard(cid){mut(w=>{detach(w,cid);delete w.cards[cid]})}
+function preset(n){mut(w=>applyPreset(w,n))}
+function toggleMax(){const w=W();w.max=w.max?null:w.focus;save();render()}
+function newTab(){S.tabs.push(newWs('Workspace '+(++S.n)));S.cur=S.tabs.length-1;H=[];F=[];save();render()}
+function theme(){const dark=S.theme?S.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;S.theme=dark?'light':'dark';applyTheme();save()}
+function applyTheme(){if(S.theme)document.documentElement.dataset.theme=S.theme}
+function goCard(cid){const w=W(),p=paneOf(w,cid);if(!p)return;w.max=null;w.focus=p.id;p.a=cid;save();render()}
+function moveCard(cid,pid,zone){
+  const w=W(),t=(find(w,pid)||{}).n,src=paneOf(w,cid);if(!t||!src)return;
+  if(zone==='c'&&src===t)return;if(zone!=='c'&&src===t&&t.cs.length===1)return;
+  mut(w=>{const t=find(w,pid).n;detach(w,cid);if(zone==='c'){t.cs.push(cid);t.a=cid;w.focus=t.id}else addSplit(w,t,zone,cid)})}
+
+/* ---------- card bodies (placeholders for M4) ---------- */
+function body(c,w){
+  const d=document.createElement('div');d.className='body';const D=w.data[c.id]=w.data[c.id]||REG[c.type].def();
+  if(c.type==='note'){const t=document.createElement('textarea');t.placeholder='Start writing…';t.value=D.text||'';t.oninput=()=>{D.text=t.value;save()};d.append(t)}
+  else if(c.type==='table'){
+    D.g=D.g||[['Item','Qty','Price','Total'],['','','',''],['','','',''],['','','','']];
+    const g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns='repeat('+Math.max(1,D.g[0].length)+',1fr)';
+    D.g.forEach((r,ri)=>r.forEach((v,ci)=>{const i=document.createElement('input');i.value=v;if(!ri)i.className='h';i.oninput=()=>{D.g[ri][ci]=i.value;save()};g.append(i)}));d.append(g)}
+  else if(c.type==='tasks'){
+    D.l=D.l||[{t:'Drag this tab to a pane edge',d:0},{t:'Press Ctrl/Cmd+K',d:0}];
+    const draw=()=>{d.innerHTML='';const l=document.createElement('div');l.className='tl';
+      D.l.forEach((it,i)=>{const r=document.createElement('div');r.className='tr';const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!it.d;
+        const t=document.createElement('input');t.type='text';t.value=it.t;t.className=it.d?'d':'';
+        cb.onchange=()=>{it.d=cb.checked?1:0;t.className=it.d?'d':'';save()};t.oninput=()=>{it.t=t.value;save()};
+        t.onkeydown=e=>{if(e.key==='Backspace'&&!t.value){D.l.splice(i,1);save();draw()}};r.append(cb,t);l.append(r)});
+      const a=document.createElement('div');a.className='tr';const n=document.createElement('input');n.type='text';n.placeholder='Add task, press Enter';
+      n.onkeydown=e=>{if(e.key==='Enter'&&n.value.trim()){D.l.push({t:n.value.trim(),d:0});save();draw();d.querySelector('.tl .tr:last-child input').focus()}};a.append(n);l.append(a);d.append(l)};draw()}
+  else assistantBody(d,D,w,c);
+  return d}
+
+/* ---------- render ---------- */
+function paneEl(p,w){
+  const e=document.createElement('section');e.className='pane'+(w.focus===p.id?' focus':'');e.dataset.pid=p.id;
+  e.addEventListener('pointerdown',()=>{if(w.focus!==p.id){w.focus=p.id;document.querySelectorAll('.pane').forEach(x=>x.classList.toggle('focus',x===e))}},true);
+  const tb=document.createElement('div');tb.className='tabs';
+  p.cs.forEach(cid=>{const c=w.cards[cid],t=document.createElement('div');t.className='tab'+(p.a===cid?' on':'')+(AIMARK[cid]?' ai':'');
+    t.innerHTML=ic(c.type)+'<span></span><button class="x" title="Close card" aria-label="Close card">'+ic('x')+'</button>';t.querySelector('span').textContent=c.title;
+    t.onpointerdown=ev=>{if(!ev.target.closest('.x'))startDrag(ev,cid,p)};t.querySelector('.x').onclick=()=>closeCard(cid);tb.append(t)});
+  const s=document.createElement('span');s.className='sp';
+  const add=document.createElement('button');add.className='ib';add.title='Add card';add.innerHTML=ic('plus');add.onclick=()=>openPalette('add ');
+  const mx=document.createElement('button');mx.className='ib';mx.title='Maximize pane (Esc to restore)';mx.innerHTML=ic('max');mx.onclick=toggleMax;
+  tb.append(s,add,mx);e.append(tb);
+  const c=w.cards[p.a];
+  if(c){const b=body(c,w);markBody(b,c);e.append(b)}else{const m=document.createElement('div');m.className='empty';m.innerHTML='Empty pane<br><small>Drag a tab here, or press Ctrl/Cmd+K to add a card</small>';e.append(m)}
+  return e}
+function node(n,w){
+  if(n.t==='pane'){const c=document.createElement('div');c.className='cell';c.append(paneEl(n,w));return c}
+  const s=document.createElement('div');s.className='split '+n.dir;
+  n.ch.forEach((c,i)=>{const el=node(c,w);el.style.flex=n.sz[i]+' 1 0';s.append(el);
+    if(i<n.ch.length-1){const d=document.createElement('div');d.className='div '+n.dir;d.onpointerdown=e=>resize(e,n,i,s);d.ondblclick=()=>{mut(()=>{n.sz=n.sz.map(()=>1/n.sz.length)})};s.append(d)}});
+  return s}
+function renderTop(){
+  const t=$('#top');t.innerHTML='<div class="logo"><i></i>AppDeck <small>'+VER+'</small></div>';
+  S.tabs.forEach((w,i)=>{const b=document.createElement('button');b.className='wt'+(i===S.cur?' on':'');b.textContent=w.name;
+    b.onclick=()=>{if(i!==S.cur){S.cur=i;H=[];F=[];save();render()}};
+    b.ondblclick=()=>{b.contentEditable='true';b.focus();const done=()=>{b.contentEditable='false';w.name=b.textContent.trim()||w.name;save();renderTop()};b.onblur=done;b.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();b.blur()}}};t.append(b)});
+  const mk=(h,title,f,cls='ib')=>{const b=document.createElement('button');b.className=cls;b.title=title;b.innerHTML=h;b.onclick=f;return b};
+  const u=mk(ic('undo'),'Undo (Ctrl/Cmd+Z)',undo),r=mk(ic('redo'),'Redo (Ctrl/Cmd+Shift+Z)',redo);u.disabled=!H.length;r.disabled=!F.length;
+  const sps=document.createElement('span');sps.className='sp';const st=document.createElement('span');st.id='st';st.className='st';
+  t.append(mk(ic('plus'),'New workspace',newTab),sps,st,mk(ic('search')+'<span>Search or run a command</span><kbd>Ctrl K</kbd>','Command palette',()=>openPalette(),'ib cmdk'),u,r,mk(ic('sun'),'Toggle theme',theme));paintSt()}
+function render(){
+  const w=W(),r=$('#root');r.innerHTML='';
+  if(w.max){const f=find(w,w.max);if(f&&f.n.t==='pane'){const c=document.createElement('div');c.className='cell';c.style.flex='1';c.append(paneEl(f.n,w));r.append(c)}else w.max=null}
+  if(!w.max){const n=node(w.root,w);n.style.flex='1';r.append(n)}
+  renderTop()}
+
+/* ---------- divider resize ---------- */
+function resize(e,n,i,s){
+  e.preventDefault();const row=n.dir==='row',tot=row?s.clientWidth:s.clientHeight,st=row?e.clientX:e.clientY,a=n.sz[i],b=n.sz[i+1],before=snap();
+  const kids=[...s.children].filter(c=>!c.classList.contains('div'));let moved=false;
+  const mv=ev=>{const d=((row?ev.clientX:ev.clientY)-st)/tot,na=Math.min(a+b-.08,Math.max(.08,a+d));n.sz[i]=na;n.sz[i+1]=a+b-na;kids[i].style.flex=na+' 1 0';kids[i+1].style.flex=(a+b-na)+' 1 0';moved=true};
+  const up=()=>{removeEventListener('pointermove',mv);removeEventListener('pointerup',up);if(moved){H.push(before);F=[];save();renderTop()}};
+  addEventListener('pointermove',mv);addEventListener('pointerup',up)}
+
+/* ---------- drag and drop with five drop zones ---------- */
+function zoneOf(x,y,overTabs){
+  if(overTabs||(x>.25&&x<.75&&y>.25&&y<.75))return'c';
+  const d={l:x,r:1-x,t:y,b:1-y};return Object.keys(d).reduce((a,b)=>d[a]<=d[b]?a:b)}
+function showDrop(r,z){
+  const o=$('#drop');o.style.display='block';let{left,top,width,height}=r;
+  if(z==='l')width/=2;if(z==='r'){left+=width/2;width/=2}if(z==='t')height/=2;if(z==='b'){top+=height/2;height/=2}
+  Object.assign(o.style,{left:left+'px',top:top+'px',width:width+'px',height:height+'px'})}
+function startDrag(e,cid,p){
+  if(e.button)return;const sx=e.clientX,sy=e.clientY;let on=false,g=null,tgt=null;
+  const mv=ev=>{
+    if(!on){if(Math.hypot(ev.clientX-sx,ev.clientY-sy)<5)return;on=true;g=document.createElement('div');g.className='ghost';g.textContent=W().cards[cid].title;document.body.append(g);document.body.classList.add('dragging')}
+    g.style.transform='translate('+(ev.clientX+12)+'px,'+(ev.clientY+12)+'px)';
+    const hit=document.elementFromPoint(ev.clientX,ev.clientY),el=hit&&hit.closest('.pane');
+    if(!el){tgt=null;$('#drop').style.display='none';return}
+    const r=el.getBoundingClientRect(),z=zoneOf((ev.clientX-r.left)/r.width,(ev.clientY-r.top)/r.height,!!hit.closest('.tabs'));
+    tgt={pid:el.dataset.pid,z};showDrop(r,z)};
+  const up=()=>{
+    removeEventListener('pointermove',mv);removeEventListener('pointerup',up);$('#drop').style.display='none';
+    if(g)g.remove();document.body.classList.remove('dragging');
+    if(!on){const w=W();w.focus=p.id;p.a=cid;save();render();return}
+    if(tgt)moveCard(cid,tgt.pid,tgt.z)};
+  addEventListener('pointermove',mv);addEventListener('pointerup',up)}
+
+/* ---------- command palette ---------- */
+let items=[],sel=0;
+function cmds(){const w=W();return[
+  ...Object.keys(TYPES).map(t=>({n:'Add '+TYPES[t]+' card',f:()=>addCard(t)})),
+  ...[['single','Single pane'],['cols','Two columns'],['quad','2 × 2 grid'],['main','Main + two stacked']].map(([k,n])=>({n:'Layout: '+n,f:()=>preset(k)})),
+  ...Object.values(w.cards).map(c=>({n:'Go to '+c.title,f:()=>goCard(c.id)})),
+  {n:'Assistant: check consistency across cards',f:checkConsistency},{n:'Export .appdeck file',f:exportFile},{n:'Import .appdeck file',f:importFile},{n:'Run tests',f:runTests},{n:'Toggle maximize pane',f:toggleMax},{n:'New workspace',f:newTab},{n:'Undo',f:undo},{n:'Redo',f:redo},{n:'Toggle theme',f:theme}]}
+function drawPal(){const l=$('#pal .l');l.innerHTML='';items.forEach((c,i)=>{const d=document.createElement('div');d.className='it'+(i===sel?' on':'');d.textContent=c.n;d.onclick=()=>runPal(c);l.append(d)})}
+function filterPal(){const q=$('#pal input').value.toLowerCase();items=cmds().filter(c=>c.n.toLowerCase().includes(q));sel=0;drawPal()}
+function openPalette(q=''){$('#pal').style.display='flex';const i=$('#pal input');i.value=q;i.focus();filterPal()}
+function closePal(){$('#pal').style.display='none'}
+function runPal(c){closePal();c.f()}
+$('#pal input').addEventListener('input',filterPal);
+$('#pal').addEventListener('pointerdown',e=>{if(e.target.id==='pal')closePal()});
+$('#pal input').addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'){e.preventDefault();sel=Math.min(items.length-1,sel+1);drawPal()}
+  else if(e.key==='ArrowUp'){e.preventDefault();sel=Math.max(0,sel-1);drawPal()}
+  else if(e.key==='Enter'&&items[sel])runPal(items[sel])});
+addEventListener('keydown',e=>{
+  const m=e.ctrlKey||e.metaKey,typing=/INPUT|TEXTAREA/.test((e.target||{}).tagName)||(e.target&&e.target.isContentEditable);
+  if(m&&e.key.toLowerCase()==='k'){e.preventDefault();openPalette()}
+  else if(e.key==='Escape'){if($('#pal').style.display==='flex')closePal();else if(W().max)toggleMax()}
+  else if(m&&!typing&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}
+  else if(m&&!typing&&e.key.toLowerCase()==='y'){e.preventDefault();redo()}});
+
+/* ---------- assistant: actions (contract), provider adapters, UI ---------- */
+const DEF={anthropic:'claude-sonnet-5-5',gemini:'gemini-2.5-flash',openai:'gpt-4o-mini'};
+let AI={prov:'anthropic',model:DEF.anthropic,base:'',key:''};   /* kept in its own IndexedDB record; never in S, pack() or exports */
+async function saveAI(){try{await kv('readwrite',s=>s.put(AI,'ai'))}catch(e){setSt('Could not save provider settings: '+(e&&e.message||e),1)}}
+const S_={type:'string'},ITEMS={type:'array',items:{type:'object',properties:{text:S_,done:{type:'boolean'}},required:['text']}},ROWS={type:'array',items:{type:'array',items:S_}};
+const T=(name,description,properties,required)=>({name,description,parameters:{type:'object',properties,required}});
+const TOOLS=[T('set_note','Replace the full text of a Note card.',{card:S_,text:S_},['card','text']),
+ T('set_tasks','Replace all items of a Tasks card.',{card:S_,items:ITEMS},['card','items']),
+ T('set_table','Replace all rows of a Table card (first row is the header).',{card:S_,rows:ROWS},['card','rows']),
+ T('add_card','Add a new card, optionally with content: text for note, items for tasks, rows for table.',{type:{type:'string',enum:['note','tasks','table']},title:S_,text:S_,items:ITEMS,rows:ROWS},['type']),
+ T('close_card','Close a card.',{card:S_},['card']),T('rename_card','Rename a card.',{card:S_,title:S_},['card','title'])];
+/* human-readable card refs: <type>-<title>-<id>; ids resolve from a ref or bare id, and are hidden from chat text */
+const refOf=c=>c.type+'-'+c.title+'-'+c.id;
+function cardOf(w,x){if(typeof x!=='string')return null;if(Object.prototype.hasOwnProperty.call(w.cards,x))return w.cards[x];return Object.values(w.cards).find(c=>refOf(c)===x||x.endsWith('-'+c.id))||null}
+function humanize(t,w){let r=String(t);Object.values(w.cards).forEach(c=>[refOf(c),c.id].forEach(k=>{r=r.split('`'+k+'`').join('"'+c.title+'"').split(k).join('"'+c.title+'"')}));return r}
+const FLAT={note:d=>d.text,tasks:d=>d.l.map(x=>(x.d?'[x] ':'[ ] ')+x.t).join('\n'),table:d=>d.g.map(r=>r.join(' | ')).join('\n')};
+const unesc=x=>typeof x==='string'&&!x.includes('\n')?x.replace(/\\n/g,'\n').replace(/\\t/g,'\t'):x;   /* some models double-escape newlines */
+const MK={note:g=>({text:unesc(g.text)}),tasks:g=>({l:arr(g.items).map(x=>({t:x&&x.text,d:x&&x.done}))}),table:g=>({g:g.rows})};
+const OKARGS={note:g=>typeof g.text==='string',tasks:g=>Array.isArray(g.items),table:g=>Array.isArray(g.rows)&&g.rows.every(Array.isArray)};
+function lineDiff(a,b){const A=a?a.split('\n'):[],B=b?b.split('\n'):[],sa=new Set(A),sb=new Set(B);return[...A.filter(l=>!sb.has(l)).map(l=>['-',l]),...B.map(l=>[sa.has(l)?' ':'+',l])]}
+/* every model action is validated here against live cards and card schemas; nothing is assigned from raw model output */
+function plan(a,w,seen){
+  const g=a&&a.args&&typeof a.args==='object'?a.args:{},nm=a&&a.name,m=/^set_(note|tasks|table)$/.exec(nm);
+  if(m){const ty=m[1],c=cardOf(w,g.card);if(!c)return{err:'Unknown card '+g.card};if(c.type!==ty)return{err:'"'+c.title+'" is not a '+ty+' card'};if(seen&&!seen.has(c.id))return{err:'Contents of "'+c.title+'" were not shared; @mention it first',need:c.id};if(!OKARGS[ty](g))return{err:'Invalid arguments for '+nm};
+    const data=REG[ty].fix(MK[ty](g)),old=REG[ty].fix(w.data[c.id]||{});return{op:{k:'set',id:c.id,data},desc:'Replace content of "'+c.title+'"',diff:lineDiff(FLAT[ty](old),FLAT[ty](data))}}
+  if(nm==='add_card'){const ty=g.type;if(!['note','tasks','table'].includes(ty))return{err:'Cannot add a '+ty+' card'};const t0=(str(g.title).trim()||REG[ty].title).toLowerCase(),dup=Object.values(w.cards).find(c=>c.type===ty&&c.title.trim().toLowerCase()===t0);if(dup)return{err:'A '+ty+' card "'+dup.title+'" already exists (@mention it to update it)',dup:dup.id,dupType:ty};const data=REG[ty].fix(MK[ty](g)),title=str(g.title).slice(0,60)||REG[ty].title;
+    return{op:{k:'add',type:ty,title,data},desc:'Add '+ty+' card "'+title+'"',diff:lineDiff('',FLAT[ty](data))}}
+  const c=cardOf(w,g.card);
+  if(nm==='close_card'||nm==='rename_card'){if(!c)return{err:'Unknown card '+g.card};if(c.type==='assistant')return{err:'The assistant card cannot be changed'};
+    if(nm==='close_card')return{op:{k:'close',id:c.id},desc:'Close "'+c.title+'"'};
+    const t=str(g.title).trim().slice(0,60);return t?{op:{k:'rename',id:c.id,title:t},desc:'Rename "'+c.title+'" to "'+t+'"'}:{err:'Empty title'}}
+  return{err:'Unknown action '+nm}}
+/* new cards go to a pane without the assistant; if none exists, split one off to its right */
+function place(w,cid,focus){const hasAs=p=>p.cs.some(c=>w.cards[c]&&w.cards[c].type==='assistant'),keep=w.focus;
+  let p=(find(w,w.focus)||{}).n;if(!(p&&p.t==='pane'&&!hasAs(p))){p=null;walk(w.root,n=>{if(!p&&n.t==='pane'&&!hasAs(n))p=n})}
+  if(p){p.cs.push(cid);p.a=cid}else addSplit(w,firstPane(w),'r',cid);
+  w.focus=focus?paneOf(w,cid).id:(find(w,keep)?keep:w.focus)}
+/* models often follow add_card with set_* on an invented id: fold that content into the card just added */
+function mergeCalls(calls,w){const out=[];
+  calls.forEach(k=>{const m=k&&/^set_(note|tasks|table)$/.exec(k.name),g=(k&&k.args)||{};
+    if(m&&!cardOf(w,g.card)){let j=-1;out.forEach((x,i)=>{if(x.name==='add_card'&&x.args&&x.args.type===m[1]&&!(x.args.text||x.args.items||x.args.rows))j=i});
+      if(j>=0){const a=out[j].args;if(m[1]==='note')a.text=g.text;else if(m[1]==='tasks')a.items=g.items;else a.rows=g.rows;return}}
+    out.push(k)});return out}
+/* visual markers: which cards and which content the assistant just touched */
+const AIMARK={};let PEND=null;
+function checkConsistency(){const w=W(),a=Object.values(w.cards).find(c=>c.type==='assistant');if(!a)return toast('Add an Assistant card first');w.data[a.id]=w.data[a.id]||REG.assistant.def();w.data[a.id].mode='plan';PEND={cid:a.id,text:'Check @all for conflicting facts (names, dates, counts, amounts) across these cards. List any conflicts, then propose minimal fixes only where cards disagree.'};goCard(a.id)}
+function mark(ty,a,b){
+  if(ty==='tasks'){const items=[];b.l.forEach((x,i)=>{const y=a.l[i];if(!y||y.t!==x.t||y.d!==x.d)items.push(i)});return{k:'set',items,n:items.length,u:'item'}}
+  if(ty==='table'){const cells=[],nc=b.g[0].length;b.g.forEach((r,ri)=>r.forEach((v,ci)=>{if((a.g[ri]||[])[ci]!==v)cells.push(ri*nc+ci)}));return{k:'set',cells,n:cells.length,u:'cell'}}
+  return{k:'set',n:lineDiff(a.text,b.text).filter(x=>x[0]==='+').length,u:'line'}}
+function markBody(d,c){const m=AIMARK[c.id];if(!m||(m.k==='set'&&!m.n))return;
+  const bar=document.createElement('div'),x=document.createElement('button');bar.className='aibar';
+  bar.textContent=m.k==='add'?'✦ Added by assistant':m.k==='rename'?'✦ Renamed by assistant':'✦ Assistant updated '+m.n+' '+m.u+(m.n===1?'':'s');
+  x.textContent='✕';x.title='Dismiss';x.onclick=()=>{delete AIMARK[c.id];render()};bar.append(x);d.prepend(bar);
+  const rows=d.querySelectorAll('.tl .tr'),cells=d.querySelectorAll('.grid input');
+  (m.items||[]).forEach(i=>rows[i]&&rows[i].classList.add('chg'));(m.cells||[]).forEach(i=>cells[i]&&cells[i].classList.add('chg'))}
+function toast(t){let e=document.getElementById('toast');if(!e){e=document.createElement('div');e.id='toast';document.body.append(e)}e.textContent=t;e.style.opacity=1;clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.opacity=0,3500)}
+const mkPlan=(a,w,seen)=>({a,...plan(a,w,seen)});
+function applyOp(w,o){
+  if(o.k==='set'){const ty=w.cards[o.id].type;AIMARK[o.id]=mark(ty,REG[ty].fix(w.data[o.id]||{}),o.data);w.data[o.id]=o.data}else if(o.k==='rename'){w.cards[o.id].title=o.title;AIMARK[o.id]={k:'rename'}}
+  else if(o.k==='close'){detach(w,o.id);delete w.cards[o.id]}
+  else{const c=id();w.cards[c]={id:c,type:o.type,title:o.title};w.data[c]=o.data;place(w,c,false);AIMARK[c]={k:'add'}}}
+function stale(h,w=W()){const bad=Object.keys(h.fp||{}).filter(i=>w.cards[i]&&JSON.stringify(w.data[i])!==h.fp[i]).map(i=>w.cards[i].title);h.stale=bad.length?bad:null;return !!bad.length}
+function doApply(h){if(h.state!=='pending')return;if(!h.list.some(r=>r.op)){h.state='failed';return}h.state='applied';
+  const n={add:0,set:0,close:0,rename:0};
+  commit(w=>{for(const k in AIMARK)delete AIMARK[k];h.list.forEach(r=>{const p=plan(r.a,w,h.seen);if(p.op){applyOp(w,p.op);n[p.op.k]++}})},{data:true});
+  toast('Assistant: '+[['add','added'],['set','updated'],['rename','renamed'],['close','closed']].filter(([k])=>n[k]).map(([k,v])=>n[k]+' '+v).join(' · '))}   /* re-validated at apply time; undoable incl. content */
+const tok=c=>c.title.replace(/\W+/g,'_');
+function mentioned(txt,w){const set=new Set((txt.match(/@\w+/g)||[]).map(x=>x.slice(1).toLowerCase()));
+  return Object.values(w.cards).filter(c=>c.type!=='assistant'&&(set.has('all')||set.has(tok(c).toLowerCase()))).map(c=>({id:c.id,type:c.type,title:c.title,data:REG[c.type].fix(w.data[c.id]||{})}))}
+const sysPrompt=m=>'You are the assistant inside AppDeck, a card-based workspace. Be concise.'+(m==='ask'?' You cannot see or change the workspace.':' The user shares cards with @mentions; their ids and full current contents arrive in <workspace_cards> on each message. You can only see those cards. To change the workspace call the tools with exact card ids; never invent ids. add_card takes content directly (text, items or rows), so never call set_ tools on a card you just added. Every message includes <card_index> (refs, types, titles only). Use the ref of a card as the card argument. In prose always call a card by its title, never by its ref or id. If you need the contents of a card, say so briefly. Prefer updating the existing card that serves a purpose over adding a duplicate, and add only when none fits or the user asks. You can set content only on cards whose contents arrive in <workspace_cards>; for others, ask the user to @mention them (rename and close need no content). When asked to check consistency, compare facts across cards, list conflicts, and propose minimal set_ fixes. If you need another card, ask the user to @mention it.');
+/* provider adapters: build request + read one streamed event */
+const pj=s=>{try{return JSON.parse(s||'{}')}catch(e){return{}}};
+const gs=x=>Array.isArray(x)?x.map(gs):x&&typeof x==='object'?Object.fromEntries(Object.entries(x).map(([k,v])=>[k,k==='type'&&typeof v==='string'?v.toUpperCase():gs(v)])):x;
+const ADAPT={
+ anthropic:{url:c=>(c.base||'https://api.anthropic.com').replace(/\/$/,'')+'/v1/messages',head:c=>({'x-api-key':c.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}),
+  body:(c,sys,ms,tl)=>({model:c.model,max_tokens:4096,stream:true,system:sys,messages:ms,...(tl?{tools:tl.map(t=>({name:t.name,description:t.description,input_schema:t.parameters}))}:{})}),
+  read:(j,st)=>{if(j.type==='content_block_start'&&j.content_block.type==='tool_use')st.calls[j.index]={name:j.content_block.name,json:''};
+   else if(j.type==='content_block_delta'){if(j.delta.type==='text_delta')st.text(j.delta.text);else if(j.delta.type==='input_json_delta'&&st.calls[j.index])st.calls[j.index].json+=j.delta.partial_json}
+   else if(j.type==='error')throw new Error(j.error&&j.error.message||'Provider error')}},
+ openai:{url:c=>(c.base||'https://api.openai.com/v1').replace(/\/$/,'')+'/chat/completions',head:c=>c.key?{Authorization:'Bearer '+c.key}:{},
+  body:(c,sys,ms,tl)=>({model:c.model,stream:true,messages:[{role:'system',content:sys},...ms],...(tl?{tools:tl.map(t=>({type:'function',function:t}))}:{})}),
+  read:(j,st)=>{if(j.error)throw new Error(j.error.message||'Provider error');const d=j.choices&&j.choices[0]&&j.choices[0].delta;if(!d)return;if(d.content)st.text(d.content);
+   (d.tool_calls||[]).forEach(t=>{const c=st.calls[t.index]=st.calls[t.index]||{name:'',json:''};if(t.function){c.name+=t.function.name||'';c.json+=t.function.arguments||''}})}},
+ gemini:{url:c=>(c.base||'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/,'')+'/models/'+encodeURIComponent(c.model)+':streamGenerateContent?alt=sse',head:c=>({'x-goog-api-key':c.key}),
+  body:(c,sys,ms,tl)=>({systemInstruction:{parts:[{text:sys}]},contents:ms.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})),...(tl?{tools:[{functionDeclarations:tl.map(t=>({name:t.name,description:t.description,parameters:gs(t.parameters)}))}]}:{})}),
+  read:(j,st)=>{if(j.error)throw new Error(j.error.message||'Provider error');const ps=(((j.candidates||[])[0]||{}).content||{}).parts||[];ps.forEach(p=>{if(p.text)st.text(p.text);if(p.functionCall)st.calls[Object.keys(st.calls).length]={name:p.functionCall.name,args:p.functionCall.args}})}}};
+async function sse(res,on){const r=res.body.getReader(),dec=new TextDecoder();let buf='';
+  for(;;){const{done,value}=await r.read();if(done)break;buf+=dec.decode(value,{stream:true});let i;
+    while((i=buf.search(/\r?\n\r?\n/))>=0){const blk=buf.slice(0,i);buf=buf.slice(i).replace(/^\r?\n\r?\n/,'');const d=blk.split(/\r?\n/).filter(l=>l.startsWith('data:')).map(l=>l.slice(5).trim()).join('');
+      if(d&&d!=='[DONE]'){let j;try{j=JSON.parse(d)}catch(e){continue}on(j)}}}}
+async function ask(c,sys,ms,tl,onText,signal){const a=ADAPT[c.prov];let txt='';const st={calls:{},text:x=>{txt+=x;onText(txt)}};
+  const res=await fetch(a.url(c),{method:'POST',signal,headers:{'content-type':'application/json',...a.head(c)},body:JSON.stringify(a.body(c,sys,ms,tl))});
+  if(!res.ok)throw new Error('HTTP '+res.status+' '+(await res.text()).slice(0,300));
+  await sse(res,j=>a.read(j,st));return{text:txt,calls:Object.values(st.calls).map(k=>({name:k.name,args:k.args||pj(k.json)}))}}
+function assistantBody(d,D,w,c0){
+  D.mode=D.mode||'ask';D.m=D.m||[];
+  const info={ask:'No workspace context is sent',plan:'Reads @mentioned cards · proposes changes for approval',create:'Reads @mentioned cards · applies changes, undoable'};
+  d.innerHTML='<div class="as"><div class="seg"></div><div class="badge"></div><div class="msgs"></div><div class="inp"><div class="mn"></div><input placeholder="Message… use @ to share a card" aria-label="Message"><button class="btn p go">Send</button></div></div>';
+  const q=x=>d.querySelector(x),seg=q('.seg'),bd=q('.badge'),ms=q('.msgs'),inp=q('input'),mn=q('.mn'),go=q('.go');let cfgOpen=false,ctl=null;
+  const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+  const drawCfg=()=>{ms.innerHTML='';const f=el('div','cfg'),sel=el('select');
+    [['anthropic','Anthropic'],['gemini','Gemini'],['openai','OpenAI-compatible']].forEach(([v,n])=>{const o=el('option',null,n);o.value=v;sel.append(o)});sel.value=AI.prov;
+    const mk=(l,ty,v,ph)=>{const i=el('input');i.type=ty;i.value=v||'';i.autocomplete='off';if(ph)i.placeholder=ph;return[el('label',null,l),i]};
+    const[lm,im]=mk('Model','text',AI.model),[lb,ib]=mk('Base URL (optional; needed for custom OpenAI-compatible servers)','text',AI.base,'default'),[lk,ik]=mk('API key: stored only in this browser, never exported','password',AI.key);
+    sel.onchange=()=>{if(!im.value||Object.values(DEF).includes(im.value))im.value=DEF[sel.value]};
+    const row=el('div'),ok=el('button','btn p','Save'),cl=el('button','btn','Cancel');row.style.cssText='display:flex;gap:6px';row.append(ok,cl);
+    ok.onclick=async()=>{AI={prov:sel.value,model:im.value.trim(),base:ib.value.trim(),key:ik.value.trim()};cfgOpen=false;await saveAI();draw()};cl.onclick=()=>{cfgOpen=false;draw()};
+    f.append(el('label',null,'Provider'),sel,lm,im,lb,ib,lk,ik,row);ms.append(f)};
+  const draw=()=>{seg.innerHTML='';['ask','plan','create'].forEach(m=>{const b=el('button',D.mode===m?'on':'',m[0].toUpperCase()+m.slice(1));b.onclick=()=>{D.mode=m;save();draw()};seg.append(b)});
+    const g=el('button',null,'⚙');g.title='Provider settings';g.onclick=()=>{cfgOpen=!cfgOpen;draw()};seg.append(g);
+    bd.textContent=info[D.mode]+' · '+AI.prov+' '+(AI.model||'');if(cfgOpen)return drawCfg();
+    ms.innerHTML='';(D.m.length?D.m:[{u:0,t:'Pick a mode and add a provider key with ⚙. In Plan or Create, @mention cards to share them.'}]).forEach(x=>{
+      const b=el('div','m'+(x.u?' u':'')+(!x.u&&/^Error: /.test(x.t)?' err':''),x.u?x.t:humanize(x.t,W())),h=x.h;
+      if(h){h.list.forEach((r,i)=>{const a=el('div','act');a.append(el('div',null,r.err?'⚠ Skipped: '+r.err:r.desc));
+          if(r.diff&&r.diff.length){const p=el('pre');r.diff.slice(0,60).forEach(([sg,l])=>p.append(el('span',sg==='+'?'df-a':sg==='-'?'df-r':'',sg+' '+l+'\n')));a.append(p)}
+          if(r.dup&&h.state==='pending'&&h.seen&&h.seen.has(r.dup)){const u=el('button','btn','Update existing instead');u.onclick=()=>{const g=r.a.args||{};h.list[i]=mkPlan({name:'set_'+r.dupType,args:{card:r.dup,text:g.text,items:g.items,rows:g.rows}},W(),h.seen);h.fp[r.dup]=JSON.stringify(W().data[r.dup]);draw()};a.append(u)}
+          b.append(a)});
+        if(h.stale)b.append(el('div','act','⚠ Changed since proposed: '+h.stale.join(', ')+'. Review, then Apply anyway.'));
+        const row=el('div');row.style.cssText='margin-top:6px;display:flex;gap:6px';
+        if(h.state==='pending'){const ap=el('button','btn p',h.stale?'Apply anyway':'Apply'),di=el('button','btn','Discard');ap.onclick=()=>{if(!h.stale&&stale(h)){draw();return}doApply(h)};di.onclick=()=>{h.state='discarded';draw()};row.append(ap,di)}
+        else row.append(el('small',null,{applied:'Applied · Ctrl/Cmd+Z undoes it',discarded:'Discarded',failed:'Nothing valid to apply'}[h.state]));b.append(row)}
+      const nd=(x.need||[]).map(i=>W().cards[i]).filter(Boolean);
+      if(nd.length&&D.m[D.m.length-1]===x){const row=el('div');row.style.cssText='margin-top:6px;display:flex;gap:6px;flex-wrap:wrap';nd.forEach(c=>{const k=el('button','btn','Share "'+c.title+'" and retry');k.onclick=()=>retry(x);row.append(k)});b.append(row)}
+      ms.append(b)});ms.scrollTop=ms.scrollHeight};
+  const retry=x=>{if(ctl)return;const i=D.m.indexOf(x),u=D.m[i-1];if(!u||!u.u)return;const cs=x.need.map(id=>W().cards[id]).filter(Boolean);D.m.splice(i-1,2);inp.value=u.t+' '+cs.map(c=>'@'+tok(c)).join(' ');send()};
+  const send=async()=>{
+    if(ctl){ctl.abort();return}
+    const txt=inp.value.trim();if(!txt)return;const c=AI;
+    if(!c.model||(!c.key&&c.prov!=='openai')){cfgOpen=true;draw();return}
+    const w=W(),refs=D.mode==='ask'?[]:mentioned(txt,w);
+    const hist=D.m.filter(x=>x.t&&!(!x.u&&/^Error: /.test(x.t))).map(x=>({role:x.u?'user':'assistant',content:x.t}));
+    const idx=Object.values(w.cards).filter(x=>x.type!=='assistant').map(x=>({ref:refOf(x),type:x.type,title:x.title}));
+    const content=D.mode==='ask'?txt:txt+'\n\n<card_index>\n'+JSON.stringify(idx)+'\n</card_index>\n<workspace_cards>\n'+JSON.stringify(refs.map(({id,...r})=>({ref:refOf(w.cards[id]),...r})))+'\n</workspace_cards>';
+    const bot={u:0,t:''};D.m.push({u:1,t:txt},bot);inp.value='';mn.style.display='none';draw();ctl=new AbortController();go.textContent='Stop';
+    try{const r=await ask(c,sysPrompt(D.mode),[...hist,{role:'user',content}],D.mode==='ask'?null:TOOLS,t=>{bot.t=t;if(ms.lastChild)ms.lastChild.textContent=humanize(t,W());ms.scrollTop=ms.scrollHeight},ctl.signal);
+      bot.t=r.text||(r.calls.length?'Proposed changes:':'(no reply)');
+      const needs=new Set();if(D.mode!=='ask'){const sn=new Set(refs.map(x=>x.id));Object.values(w.cards).forEach(c=>{if(c.type!=='assistant'&&!sn.has(c.id)&&(bot.t.includes(c.id)||(c.title.length>=6&&bot.t.includes(c.title))))needs.add(c.id)})}
+      if(r.calls.length&&D.mode!=='ask'){const seen=new Set(refs.map(x=>x.id)),list=mergeCalls(r.calls,w).map(k=>mkPlan(k,w,seen)),fp={};list.forEach(x=>{if(x.op&&x.op.k==='set')fp[x.op.id]=JSON.stringify(w.data[x.op.id])});const h={list,state:'pending',seen,fp};Object.defineProperty(bot,'h',{value:h,enumerable:false,writable:true});list.forEach(x=>x.need&&needs.add(x.need));Object.defineProperty(bot,'need',{value:[...needs],enumerable:false,writable:true});if(D.mode==='create')doApply(h)}else if(needs.size)Object.defineProperty(bot,'need',{value:[...needs],enumerable:false,writable:true})}
+    catch(e){const m=String(e&&e.message||e);bot.t=(bot.t?bot.t+'\n\n':'')+(e&&e.name==='AbortError'?'Stopped.':'Error: '+(c.key?m.split(c.key).join('***'):m))}
+    ctl=null;go.textContent='Send';save();draw()};
+  go.onclick=send;inp.onkeydown=e=>{if(e.key==='Enter')send()};
+  inp.oninput=()=>{const m=/@(\w*)$/.exec(inp.value);mn.innerHTML='';mn.style.display='none';if(!m||D.mode==='ask')return;
+    const cs=Object.values(W().cards).filter(c=>c.type!=='assistant'&&tok(c).toLowerCase().startsWith(m[1].toLowerCase()));
+    cs.forEach(c=>{const b=el('button',null,'@'+tok(c));b.onmousedown=e=>{e.preventDefault();inp.value=inp.value.replace(/@\w*$/,'@'+tok(c)+' ');mn.style.display='none';inp.focus()};mn.append(b)});if(cs.length)mn.style.display='block'};
+  draw();if(PEND&&c0&&PEND.cid===c0.id){inp.value=PEND.text;PEND=null;send()}}
+
+/* ---------- in-page tests: palette "Run tests", or open with ?test ---------- */
+function showResults(l){$('#pal').style.display='flex';$('#pal input').value='';items=l.map(n=>({n,f(){}}));sel=-1;drawPal()}
+async function runTests(){
+  const out=[];let bad=0;const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+  const t=(n,f)=>{try{if(f()===false)throw new Error('failed')}catch(e){bad++;out.push('✗ '+n+' — '+e.message);return}out.push('✓ '+n)};
+  const cnt=w=>{const c={};walk(w.root,n=>{if(n.t==='pane')n.cs.forEach(x=>c[x]=(c[x]||0)+1)});const k=Object.keys(w.cards);return k.length===Object.keys(c).length&&k.every(x=>c[x]===1)};
+  const st=()=>({tabs:[seed()],cur:0,n:1});
+  t('seed: every card is in exactly one pane',()=>cnt(st().tabs[0]));
+  t('presets keep all cards',()=>['single','cols','quad','main'].every(k=>{const w=seed();applyPreset(w,k);return cnt(w)}));
+  t('split, then closing the card prunes back to one pane',()=>{const w=newWs('t'),a=id(),b=id();w.cards[a]={id:a,type:'note',title:'a'};w.cards[b]={id:b,type:'note',title:'b'};const p=w.root;p.cs=[a,b];p.a=a;
+    detach(w,b);addSplit(w,p,'r',b);if(!(w.root.t==='split'&&w.root.dir==='row'&&w.root.ch.length===2&&Math.abs(w.root.sz[0]+w.root.sz[1]-1)<1e-9&&cnt(w)))return false;
+    detach(w,b);delete w.cards[b];return w.root.t==='pane'&&cnt(w)});
+  t('round trip is lossless and stable',()=>{const s=st(),w=s.tabs[0];w.data[Object.keys(w.cards)[0]]={text:'héllo 🌍 "q"\n\ttab'};
+    const o0=pack(s),o1=pack(unpack(clone(o0))),o2=pack(unpack(o1));return eq(o0.workspaces[0].cards,o1.workspaces[0].cards)&&eq(o0.workspaces[0].layout,o1.workspaces[0].layout)&&eq(o1,o2)});
+  t('keys never reach the file or survive a load',()=>{const s=st(),w=s.tabs[0],a=Object.values(w.cards).find(c=>c.type==='assistant').id;w.data[a].apiKey='sk-SECRET';
+    const o=pack(s);o.workspaces[0].cards.find(c=>c.type==='assistant').data.apiKey='sk-SECRET';return !JSON.stringify(pack(s)).includes('sk-SECRET')&&!JSON.stringify(pack(unpack(o))).includes('sk-SECRET')});
+  t('malformed files are rejected or repaired',()=>{let r=0;try{unpack({})}catch(e){r=1}if(!r)return false;
+    const w=unpack({format:'appdeck',v:1,workspaces:[{cards:[{id:'a',type:'evil',data:{}},{id:'b',type:'note',data:{text:5}}],layout:{t:'pane',cs:['a','zz','b']}}]}).tabs[0];return Object.keys(w.cards).join()==='b'&&w.data.b.text===''&&cnt(w)});
+  t('orphan cards are re-homed',()=>{const o=pack(st());o.workspaces[0].layout=null;return cnt(unpack(o).tabs[0])});
+  t('schemas coerce bad data',()=>eq(REG.table.fix({g:[[1,null],'x']}).g,[['1',''],['','']])&&REG.assistant.fix({mode:'x'}).mode==='ask');
+  t('actions are validated against card schemas',()=>{const w=seed(),f=ty=>Object.values(w.cards).find(c=>c.type===ty).id,tk=f('tasks'),nt=f('note');
+    const a=plan({name:'set_tasks',args:{card:tk,items:[{text:'x',done:true},{text:5}]}},w);if(!a.op||a.op.data.l[0].d!==1||a.op.data.l[1].t!=='')return false;
+    if(![plan({name:'set_tasks',args:{card:nt,items:[]}},w),plan({name:'set_note',args:{card:'nope',text:'a'}},w),plan({name:'set_note',args:{card:nt,text:7}},w),plan({name:'add_card',args:{type:'assistant'}},w),plan({name:'close_card',args:{card:f('assistant')}},w),plan({name:'evil',args:{}},w),plan(null,w)].every(r=>r.err))return false;
+    applyOp(w,plan({name:'set_tasks',args:{card:tk,items:[{text:'x',done:true}]}},w).op);applyOp(w,plan({name:'add_card',args:{type:'note',title:'N2',text:'hi'}},w).op);applyOp(w,plan({name:'close_card',args:{card:nt}},w).op);
+    return w.data[tk].l.length===1&&Object.values(w.cards).some(c=>c.title==='N2'&&w.data[c.id].text==='hi')&&!w.cards[nt]&&cnt(w)});
+  t('provider streams parse text and tool calls',()=>{const run=(p,ev)=>{let txt='';const s={calls:{},text:x=>txt+=x};ev.forEach(j=>ADAPT[p].read(j,s));return{txt,c:Object.values(s.calls).map(k=>({name:k.name,args:k.args||pj(k.json)}))}};
+    const an=run('anthropic',[{type:'content_block_delta',index:0,delta:{type:'text_delta',text:'Hi'}},{type:'content_block_start',index:1,content_block:{type:'tool_use',name:'set_note'}},{type:'content_block_delta',index:1,delta:{type:'input_json_delta',partial_json:'{"card":"a",'}},{type:'content_block_delta',index:1,delta:{type:'input_json_delta',partial_json:'"text":"b"}'}}]);
+    const oa=run('openai',[{choices:[{delta:{content:'Hi'}}]},{choices:[{delta:{tool_calls:[{index:0,function:{name:'set_note',arguments:'{"card":"a",'}}]}}]},{choices:[{delta:{tool_calls:[{index:0,function:{arguments:'"text":"b"}'}}]}}]}]);
+    const ge=run('gemini',[{candidates:[{content:{parts:[{text:'Hi'},{functionCall:{name:'set_note',args:{card:'a',text:'b'}}}]}}]}]);
+    return[an,oa,ge].every(r=>r.txt==='Hi'&&eq(r.c,[{name:'set_note',args:{card:'a',text:'b'}}]))});
+  t('provider keys never enter the workspace file',()=>{const old=AI;AI={...AI,key:'sk-PROVIDER'};const j=JSON.stringify(pack(st()));AI=old;return !j.includes('sk-PROVIDER')});
+  t('model double-escaped newlines are repaired',()=>plan({name:'add_card',args:{type:'note',text:'a\\nb'}},seed()).op.data.text==='a\nb'&&unesc('x\ny\\n')==='x\ny\\n');
+  t('follow-up set_* on an invented id folds into the new card',()=>{const w=seed(),r=mergeCalls([{name:'add_card',args:{type:'table',title:'F'}},{name:'set_table',args:{card:'PLACEHOLDER',rows:[['a','b'],['1','2']]}}],w);return r.length===1&&mkPlan(r[0],w).op.data.g[1][1]==='2'});
+  t('new cards avoid the assistant pane',()=>{const w=seed();w.focus=paneOf(w,Object.values(w.cards).find(c=>c.type==='assistant').id).id;const c1=id();w.cards[c1]={id:c1,type:'note',title:'n'};place(w,c1,false);if(paneOf(w,c1).cs.some(x=>w.cards[x].type==='assistant'))return false;
+    const v=newWs('v'),a=id();v.cards[a]={id:a,type:'assistant',title:'A'};v.root.cs=[a];v.root.a=a;const c2=id();v.cards[c2]={id:c2,type:'note',title:'n'};place(v,c2,false);return v.root.t==='split'&&paneOf(v,c2)!==paneOf(v,a)&&cnt(v)});
+  t('change markers point at changed items and cells',()=>{const m=mark('tasks',{l:[{t:'a',d:0},{t:'b',d:0}]},{l:[{t:'a',d:0},{t:'b',d:1},{t:'c',d:0}]}),k=mark('table',{g:[['a','b'],['1','2']]},{g:[['a','b'],['1','9']]});return eq(m.items,[1,2])&&eq(k.cells,[3])});
+  t('set_* needs shared contents; duplicate adds are flagged',()=>{const w=seed(),tk=Object.values(w.cards).find(c=>c.type==='tasks').id,a={name:'set_tasks',args:{card:tk,items:[]}};
+    return plan(a,w,new Set()).err&&plan(a,w,new Set([tk])).op&&plan({name:'add_card',args:{type:'tasks',title:'tasks'}},w).dup===tk&&!plan({name:'add_card',args:{type:'tasks',title:'Other'}},w).err});
+  t('stale proposals are detected',()=>{const w=seed(),tk=Object.values(w.cards).find(c=>c.type==='tasks').id,h={fp:{[tk]:JSON.stringify(w.data[tk])}};if(stale(h,w))return false;w.data[tk].l.push({t:'x',d:0});return stale(h,w)&&h.stale[0]==='Tasks'});
+  t('@all shares every non-assistant card',()=>mentioned('check @all',seed()).length===3);
+  t('card refs resolve and render readably',()=>{const w=seed(),c=Object.values(w.cards).find(x=>x.type==='tasks');return cardOf(w,refOf(c))===c&&cardOf(w,c.id)===c&&!cardOf(w,'constructor')&&humanize('see `'+c.id+'` and '+refOf(c),w)==='see "Tasks" and "Tasks"'&&!!plan({name:'set_tasks',args:{card:refOf(c),items:[]}},w).op});
+  t('mentions resolve only named cards',()=>{const w=seed();const r=mentioned('see @Tasks and @Nope',w);return r.length===1&&r[0].title==='Tasks'&&r[0].data.l.length>0});
+  try{const o=pack(st());await kv('readwrite',s=>s.put(o,'test'));const r=await kv('readonly',s=>s.get('test'));await kv('readwrite',s=>s.delete('test'));t('IndexedDB round trip',()=>eq(r,o))}catch(e){t('IndexedDB round trip',()=>{throw e})}
+  out.unshift((out.length-bad)+'/'+out.length+' tests passed');showResults(out);return out}
+
+/* ---------- boot ---------- */
+function seed(){
+  const w=newWs('Workspace 1');
+  [['note','Welcome'],['tasks','Tasks'],['table','Table'],['assistant','Assistant']].forEach(([t,title])=>{const c=id();w.cards[c]={id:c,type:t,title};w.data[c]=t==='note'?{text:'Drag any tab onto a pane edge to split, or onto the middle to add it as a tab.\n\nDouble-click a divider to even out sizes. Ctrl/Cmd+K opens the command palette. Layout changes can be undone.'}:REG[t].def()});
+  applyPreset(w,'main');return w}
+(async()=>{
+  let s=null;
+  try{const a=await kv('readonly',x=>x.get('ai'));if(a&&ADAPT[a.prov])AI={...AI,...a}}catch(e){}
+  try{const o=await kv('readonly',x=>x.get('state'));if(o)s=unpack(o)}catch(e){console.error(e);setSt('Could not read saved data: '+(e&&e.message||e),1)}
+  if(!s){try{const old=JSON.parse(localStorage.getItem('appdeck-m1'));if(old&&Array.isArray(old.tabs)&&old.tabs.length)s=unpack({format:'appdeck',v:1,theme:old.theme,cur:old.cur,workspaces:old.tabs.map(w=>({name:w.name,focus:w.focus,layout:w.root,cards:Object.values(w.cards||{}).map(c=>({id:c.id,type:c.type,title:c.title,data:(w.data||{})[c.id]}))}))})}catch(e){}}
+  S=s||{tabs:[seed()],cur:0,n:1};applyTheme();render();
+  if(location.search.includes('test'))runTests()})();
+</script>
+</body>
+</html>
